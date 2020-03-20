@@ -1,1 +1,1 @@
-web: statuspage
+worker: statuspage
