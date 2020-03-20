@@ -42,7 +42,7 @@ func (service *Service) Run() {
 			continue
 		}
 		service.updateStatus(Operational)
-		time.Sleep(time.Minute)
+		time.Sleep(30 * time.Second)
 	}
 }
 

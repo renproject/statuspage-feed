@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	PAGE_ID = "lzkfrqf402l6"
-	API_KEY = os.Getenv("API_KEY")
+	PageID = "lzkfrqf402l6"
+	ApiKey = os.Getenv("API_KEY")
 )
 
 type Status int8
@@ -90,7 +90,7 @@ type RequestUpdateComponent struct {
 }
 
 func UpdateStatusPage(componentID string, status Status) error {
-	url := fmt.Sprintf("https://api.statuspage.io/v1/pages/%v/components/%v?api_key=%v", PAGE_ID, componentID, API_KEY)
+	url := fmt.Sprintf("https://api.statuspage.io/v1/pages/%v/components/%v?api_key=%v", PageID, componentID, ApiKey)
 	body := struct {
 		Component RequestUpdateComponent `json:"component"`
 	}{
