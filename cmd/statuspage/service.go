@@ -35,14 +35,12 @@ func NewService( componentID string, healthCheck func()error) Service{
 
 func (service *Service) Run() {
 	for {
-
 		if err := service.healthCheck(); err != nil {
-			log.Print("fail to health check")
+			log.Printf("health check failed for component = %v, err = %v",service.componentID, err)
 			service.updateStatus(MajorOutage)
 			time.Sleep(time.Minute)
 			continue
 		}
-		log.Print("pass the health check")
 		service.updateStatus(Operational)
 		time.Sleep(time.Minute)
 	}
