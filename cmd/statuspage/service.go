@@ -42,7 +42,7 @@ func (service *Service) Run() {
 			continue
 		}
 		service.updateStatus(Operational)
-		time.Sleep(30 * time.Second)
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -74,6 +74,7 @@ func addressBalanceCheck(postfix, address string) error{
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK{
 		return fmt.Errorf("invalid status code, expected = 200, got = %v", response.StatusCode)
 	}
