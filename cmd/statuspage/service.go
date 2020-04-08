@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -22,10 +23,10 @@ const (
 type Service struct {
 	componentID string
 	status      Status
-	healthCheck func()error
+	healthCheck func() error
 }
 
-func NewService( componentID string, healthCheck func()error) Service{
+func NewService(componentID string, healthCheck func() error) Service {
 	return Service{
 		componentID: componentID,
 		status:      0,
@@ -36,7 +37,7 @@ func NewService( componentID string, healthCheck func()error) Service{
 func (service *Service) Run() {
 	for {
 		if err := service.healthCheck(); err != nil {
-			log.Printf("health check failed for component = %v, err = %v",service.componentID, err)
+			log.Printf("health check failed for component = %v, err = %v", service.componentID, err)
 			service.updateStatus(MajorOutage)
 			time.Sleep(time.Minute)
 			continue
@@ -47,7 +48,7 @@ func (service *Service) Run() {
 }
 
 func (service *Service) updateStatus(status Status) {
-	if service.status == 0 || service.status != status{
+	if service.status == 0 || service.status != status {
 		if err := UpdateStatusPage(service.componentID, status); err != nil {
 			log.Printf("cannot update service status, err = %v", err)
 			return
@@ -61,22 +62,31 @@ func mercuryHealthCheck() error {
 	if err != nil {
 		return err
 	}
-	if response.StatusCode != 200 {
-		return fmt.Errorf("invalid status code, expected = 200, got = %v", response.StatusCode)
+	if response.StatusCode != http.StatusOK {
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("invalid status code, expected = 200, got = %v, response = %s", response.StatusCode, data)
 	}
 	return nil
 }
 
-func addressBalanceCheck(postfix, address string) error{
+func addressBalanceCheck(postfix, address string) error {
 	body := fmt.Sprintf("{\"jsonrpc\": \"1.0\", \"id\": 123, \"method\": \"listunspent\", \"params\": [ 6, 9999999, [ \"%v\" ]]}", address)
 	buf := bytes.NewBuffer([]byte(body))
-	response, err := http.Post(fmt.Sprintf("%v%v", URL, postfix), "application/json",buf )
+	response, err := http.Post(fmt.Sprintf("%v%v", URL, postfix), "application/json", buf)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK{
-		return fmt.Errorf("invalid status code, expected = 200, got = %v", response.StatusCode)
+	if response.StatusCode != http.StatusOK {
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("invalid status code, expected = 200, got = %v, response = %s", response.StatusCode, data)
 	}
 	return nil
 }
